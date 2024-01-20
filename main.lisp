@@ -1,39 +1,50 @@
+(load "dataValidation.lisp")
 (defvar *miejsca* 0)
 (defvar *maksimumMiejsc* 20)
 (defvar *lista-aut* '()) 
+
+(defclass Auto ()
+  ((marka :accessor Auto-marka)
+   (rejestracja :accessor Auto-rejestracja)
+   (kolor :accessor Auto-kolor)
+   (imieWłaściciela :accessor Auto-imieWłaściciela)
+   (nazwiskoWłaściciela :accessor Auto-nazwiskoWłaściciela)
+   (abonament :accessor Auto-abonament)
+   (ileAbonament :accessor Auto-ileAbonament)))
+
+
+(defun main ()
+  (loop
+    (format t "1. Dodaj auto~%")
+    (format t "2. Usuń auto~%")
+    (format t "3. Przedłuż abonament~%")
+    (format t "4. Wyświetl listę aut~%")
+    (format t "5. Wyjście~%")
+    (force-output *query-io*)
+    (let ((choice (int-validation 1 5 "Wybierz opcję: ")))
+      (cond
+        ((= choice 1) (dodajAuto))
+        ((= choice 2) (usunAuto))
+        ((= choice 3) (przedłużAbonament))
+        ((= choice 4) (display-list-info))
+        ((= choice 5) (return))
+        (t (format t "Niepoprawna opcja~%")))))
+)
 
 (defun dodajAuto ()
   (if (< *miejsca* *maksimumMiejsc*)
       (progn
         (setq *miejsca* (incf *miejsca*))
         (let ((*auto* (make-instance 'Auto)))
-          (print "Podaj markę auta: ")
-          (force-output *query-io*)
-          (setf (Auto-marka *auto*) (read *query-io*))
-
-          (print "Podaj rejestrację auta: ")
-          (force-output *query-io*)
-          (setf (Auto-rejestracja *auto*) (read *query-io*))
-
-          (print "Podaj kolor auta: ")
-          (force-output *query-io*)
-          (setf (Auto-kolor *auto*) (read *query-io*))
-
-          (print "Podaj imię właściciela auta: ")
-          (force-output *query-io*)
-          (setf (Auto-imieWłaściciela *auto*) (read *query-io*))
-
-          (print "Podaj nazwisko właściciela auta: ")
-          (force-output *query-io*)
-          (setf (Auto-nazwiskoWłaściciela *auto*) (read *query-io*))
-
-          (print "Podaj długość abonamentu auta: ")
-          (force-output *query-io*)
-          (setf (Auto-ileAbonament *auto*) (read *query-io*))
+          (setf (Auto-marka *auto*) (string-validation 2 "Podaj markę auta: "))
+          (setf (Auto-rejestracja *auto*) (string-validation 2 "Podaj rejestrację auta: "))
+          (setf (Auto-kolor *auto*) (string-validation 2 "Podaj kolor auta: "))
+          (setf (Auto-imieWłaściciela *auto*) (string-validation 2 "Podaj imię właściciela auta: "))
+          (setf (Auto-nazwiskoWłaściciela *auto*) (string-validation 2 "Podaj nazwisko właściciela auta: "))
+          (setf (Auto-ileAbonament *auto*) (int-validation 0 100 "Podaj długość abonamentu auta: "))
           (if (> (Auto-ileAbonament *auto*) 0)
               (setf (Auto-abonament *auto*) T)
               (setf (Auto-abonament *auto*) NIL))
-
           (setq *lista-aut* (append *lista-aut* (list *auto*)))
           ))
     (print "Brak wolnych miejsc na parkingu")))
@@ -44,39 +55,20 @@
   (let ((pom 0))
     (print "Podaj indeks auta, które chcesz usunąć: ")
     (force-output *query-io*)
-    (setf pom (read *query-io*))
-    
-    (if (and (>= pom 1) (<= pom (length *lista-aut*)))
-        (progn
-          (setf *lista-aut* (delete (nth (1- pom) *lista-aut*) *lista-aut*))
-          (decf *miejsca*))
-        (print "Nieprawidłowy indeks auta")))
-  
+    (setf pom (int-validation 1 (length *lista-aut*) "Podaj indeks auta, które chcesz usunąć: "))
+    (setf *lista-aut* (delete (nth (1- pom) *lista-aut*) *lista-aut*))
+          (decf *miejsca*)
+    )
   (values)) 
 
-; (defun przedłużAbonament (auto Auto)
-;   (display-list-compact)
-
-;   (let ((pom 0))
-;     (print "Podaj indeks auta, którego abonament chcesz przedłużyć: ")
-;     (force-output *query-io*)
-;     (setf pom (read *query-io*))
-    
-;     (if (not (null (nth (- pom 1) *lista-aut*)))
-;     (progn
-;       (let ((pom2 0))
-;         (print "O ile godzin chcesz przedłużyć abonament: ")
-;         (force-output *query-io*)
-;         (setf pom2 (read *query-io*))
-
-        
-;       )
-;     )
-;     )
-;    )
-
-; )
-
+(defun przedłużAbonament ()
+  (display-list-compact)
+  (let ((pom 0))
+    (force-output *query-io*)
+    (setf pom (int-validation 1 (length *lista-aut*) "Podaj indeks auta, którego abonament chcesz przedłużyć: "))
+    (setf (Auto-ileAbonament (nth (1- pom) *lista-aut*)) (+ (Auto-ileAbonament (nth (1- pom) *lista-aut*)) (int-validation 0 100 "Podaj o ile przedłużyć abonament: ")))
+  )
+)
 
 (defun print-auto-details (auto)
   (format t "Marka: ~a~%" (Auto-marka auto))
@@ -113,18 +105,5 @@
                 (Auto-ileAbonament auto)))
   (format t "----------------------------~%"))
 
-(defclass Auto ()
-  ((marka :accessor Auto-marka)
-   (rejestracja :accessor Auto-rejestracja)
-   (kolor :accessor Auto-kolor)
-   (imieWłaściciela :accessor Auto-imieWłaściciela)
-   (nazwiskoWłaściciela :accessor Auto-nazwiskoWłaściciela)
-   (abonament :accessor Auto-abonament)
-   (ileAbonament :accessor Auto-ileAbonament)))
 
-
-(dodajAuto)
-(dodajAuto)
-(usunAuto)
-
-(display-list-info)
+(main)
