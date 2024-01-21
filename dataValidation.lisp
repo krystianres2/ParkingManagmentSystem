@@ -1,8 +1,6 @@
 (defun int-validation (min max tekst)
   (let ((input 0) (valid nil))
     (loop until (equal valid T) do
-    ;   (print tekst)
-    ;   (format t "1. Dodaj auto~%")
       (format t "~A~%" tekst)
       (force-output *query-io*)
       (setf input (read *query-io*))
@@ -11,12 +9,10 @@
           (format t "Wartość musi być liczbą z zakresu ~a i ~a.~%" min max)))
     input))
 
-; (print (int-validation 0 10 "Podaj liczbe: "))
 
 (defun string-validation (minlength tekst)
   (let ((input nil) (valid nil))
     (loop until (equal valid T) do
-    ;   (print tekst)
       (format t "~A~%" tekst)
       (force-output *query-io*)
       (setf input (read-line *query-io*))

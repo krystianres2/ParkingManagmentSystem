@@ -15,23 +15,32 @@
 
 
 (defun main ()
-  (loop
-    (format t "1. Dodaj auto~%")
-    (format t "2. Usuń auto~%")
-    (format t "3. Przedłuż abonament~%")
-    (format t "4. Wyświetl listę aut~%")
-    (format t "5. Wyjście~%")
-    (force-output *query-io*)
-    (let ((choice (int-validation 1 5 "Wybierz opcję: ")))
-      (cond
-        ((= choice 1) (dodajAuto))
-        ((= choice 2) (usunAuto))
-        ((= choice 3) (przedłużAbonament))
-        ((= choice 4) (display-list-info))
-        ((= choice 5) (return))
-        (t (format t "Niepoprawna opcja~%")))))
+  (setq *lista-aut* (load-autos-from-file "autos.txt"))
+    (loop
+      (format t "1. Dodaj auto~%")
+      (format t "2. Usuń auto~%")
+      (format t "3. Przedłuż abonament~%")
+      (format t "4. Wyświetl listę aut~%")
+      (format t "5. Wyjście~%")
+      (force-output *query-io*)
+      (let ((choice (int-validation 1 5 "Wybierz opcję: ")))
+        (cond
+          ((= choice 1) (dodajAuto))
+          ((= choice 2) (usunAuto))
+          ((= choice 3) (przedłużAbonament))
+          ((= choice 4) (display-list-info))
+          ((= choice 5) (exit-program) (return))
+          (t (format t "Niepoprawna opcja~%")))))
 )
 
+(defun exit-program ()
+  (let ((choice (string-validation 1 "Czy chcesz zapisać zmiany? (T/N): ")))
+    (if (equal choice "T")
+        (progn
+          (save-autos-to-file "autos.txt" *lista-aut*)
+          (format t "Zmiany zostały zapisane~%"))
+        (format t "Zmiany nie zostały zapisane~%"))))
+        
 (defun dodajAuto ()
   (if (< *miejsca* *maksimumMiejsc*)
       (progn
@@ -106,30 +115,5 @@
                 (Auto-ileAbonament auto)))
   (format t "----------------------------~%"))
 
-(defun save-autos-to-file (file-path)
-  (with-open-file (file file-path
-                        :direction :output
-                        :if-exists :supersede
-                        :if-does-not-exist :create)
-    (dolist (auto *lista-aut*)
-      (format file "~a ~a ~a ~a ~a ~a ~a~%"
-              (Auto-marka auto)
-              (Auto-rejestracja auto)
-              (Auto-kolor auto)
-              (Auto-imieWłaściciela auto)
-              (Auto-nazwiskoWłaściciela auto)
-              (Auto-abonament auto)
-              (Auto-ileAbonament auto)))))
 
-
-
-
-
-(load-autos-from-file "autos.txt" *lista-aut*)
-(display-list-info)
-; (dodajAuto)
-; (dodajAuto)
-
-; (save-autos-to-file "autos.txt")
-
-; (main)
+(main)
