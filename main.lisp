@@ -1,4 +1,5 @@
 (load "dataValidation.lisp")
+(load "textFile.lisp")
 (defvar *miejsca* 0)
 (defvar *maksimumMiejsc* 20)
 (defvar *lista-aut* '()) 
@@ -105,5 +106,30 @@
                 (Auto-ileAbonament auto)))
   (format t "----------------------------~%"))
 
+(defun save-autos-to-file (file-path)
+  (with-open-file (file file-path
+                        :direction :output
+                        :if-exists :supersede
+                        :if-does-not-exist :create)
+    (dolist (auto *lista-aut*)
+      (format file "~a ~a ~a ~a ~a ~a ~a~%"
+              (Auto-marka auto)
+              (Auto-rejestracja auto)
+              (Auto-kolor auto)
+              (Auto-imieWłaściciela auto)
+              (Auto-nazwiskoWłaściciela auto)
+              (Auto-abonament auto)
+              (Auto-ileAbonament auto)))))
 
-(main)
+
+
+
+
+(load-autos-from-file "autos.txt" *lista-aut*)
+(display-list-info)
+; (dodajAuto)
+; (dodajAuto)
+
+; (save-autos-to-file "autos.txt")
+
+; (main)
