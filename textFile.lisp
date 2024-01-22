@@ -23,8 +23,7 @@
                    (setf (Auto-abonament auto) abonament)
                    (setf (Auto-ileAbonament auto) (parse-integer ile-abonament))
                    (setq lista (append lista (list auto))))))
-      (format t "Autos loaded from file.~%")
-      lista)))  ; return lista here
+      lista)))  
 
 (defun save-autos-to-file (file-path lista-aut)
   (with-open-file (file file-path

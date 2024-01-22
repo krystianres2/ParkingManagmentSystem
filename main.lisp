@@ -16,22 +16,26 @@
 
 (defun main ()
   (setq *lista-aut* (load-autos-from-file "autos.txt"))
-    (loop
-      (format t "1. Dodaj auto~%")
-      (format t "2. Usuń auto~%")
-      (format t "3. Przedłuż abonament~%")
-      (format t "4. Wyświetl listę aut~%")
-      (format t "5. Wyjście~%")
-      (force-output *query-io*)
-      (let ((choice (int-validation 1 5 "Wybierz opcję: ")))
-        (cond
-          ((= choice 1) (dodajAuto))
-          ((= choice 2) (usunAuto))
-          ((= choice 3) (przedłużAbonament))
-          ((= choice 4) (display-list-info))
-          ((= choice 5) (exit-program) (return))
-          (t (format t "Niepoprawna opcja~%")))))
-)
+  (setq *miejsca*  (length *lista-aut*))
+  (display-sorted-list)
+    (block main-loop
+      (loop
+        (format t "~%------------------ MENU ------------------~%")
+        (format t "1. Dodaj auto~%")
+        (format t "2. Usuń auto~%")
+        (format t "3. Przedłuż abonament~%")
+        (format t "4. Wyświetl listę aut~%")
+        (format t "5. Wyjście~%")
+        (format t "------------------------------------------~%")
+        (force-output *query-io*)
+        (let ((choice (int-validation 1 5 "Wybierz opcję: ")))
+          (cond
+            ((= choice 1) (dodajAuto))
+            ((= choice 2) (usunAuto))
+            ((= choice 3) (przedłużAbonament))
+            ((= choice 4) (display-list))
+            ((= choice 5) (exit-program) (return-from main-loop))
+            (t (format t "Niepoprawna opcja~%")))))))
 
 (defun exit-program ()
   (let ((choice (string-validation 1 "Czy chcesz zapisać zmiany? (T/N): ")))
@@ -63,8 +67,6 @@
   (display-list-compact)
   
   (let ((pom 0))
-    (print "Podaj indeks auta, które chcesz usunąć: ")
-    (force-output *query-io*)
     (setf pom (int-validation 1 (length *lista-aut*) "Podaj indeks auta, które chcesz usunąć: "))
     (setf *lista-aut* (delete (nth (1- pom) *lista-aut*) *lista-aut*))
           (decf *miejsca*)
@@ -86,7 +88,7 @@
   (format t "Kolor: ~a~%" (Auto-kolor auto))
   (format t "Imię właściciela: ~a~%" (Auto-imieWłaściciela auto))
   (format t "Nazwisko właściciela: ~a~%" (Auto-nazwiskoWłaściciela auto))
-  (format t "Abonament: ~a~%" (Auto-abonament auto))
+  (format t "Abonament: ~a~%" (if (Auto-abonament auto) "Tak" "Nie"))
   (format t "Ile abonament: ~a~%" (Auto-ileAbonament auto)))
 
 (defun display-list-info ()
@@ -115,5 +117,25 @@
                 (Auto-ileAbonament auto)))
   (format t "----------------------------~%"))
 
+(defun display-sorted-list ()
+  (let ((sorted-list (sort (copy-list *lista-aut*) #'(lambda (a b) (< (Auto-ileAbonament a) (Auto-ileAbonament b))))))
+    (format t "Liczba dostępnych miejsc na parkingu: ~a~%" (- *maksimumMiejsc* *miejsca*))
+    (format t "Zawartość listy aut:~%")
+    (dolist (auto sorted-list)
+      (format t "----------------------------~%")
+      (print-auto-details auto))
+    (format t "----------------------------~%")))
+            
+(defun display-list ()
+  (let ((choice 0))
+    (format t "1. Wyświetl listę aut w pierwotnej kolejności~%")
+    (format t "2. Wyświetl listę aut posortowaną po długości abonamentu~%")
+    (setf choice (int-validation 1 2 "Wybierz opcję: "))
+    (cond
+      ((= choice 1) (display-list-info))
+      ((= choice 2) (display-sorted-list))
+      (t (format t "Niepoprawna opcja~%")))
+  )
+)
 
 (main)
