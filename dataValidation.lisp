@@ -1,7 +1,7 @@
-(defun int-validation (min max tekst)
+(defun int-validation (min max text)
   (let ((input 0) (valid nil))
     (loop until (equal valid T) do
-      (format t "~A~%" tekst)
+      (format t "~A~%" text)
       (force-output *query-io*)
       (setf input (read *query-io*))
       (if (and (integerp input) (<= min input max))
@@ -10,10 +10,10 @@
     input))
 
 
-(defun string-validation (minlength tekst)
+(defun string-validation (minlength text)
   (let ((input nil) (valid nil))
     (loop until (equal valid T) do
-      (format t "~A~%" tekst)
+      (format t "~A~%" text)
       (force-output *query-io*)
       (setf input (read-line *query-io*))
       (if (and (stringp input)
