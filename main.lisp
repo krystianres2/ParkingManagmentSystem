@@ -17,10 +17,10 @@
 (defun main ()
   (format t "~A[H~@*~A[J" #\escape)
     (when (probe-file "cars.txt")
-    (setq *cars-list* (load-list-from-file "cars.txt"))
-    (setq *occupied-slots*  (length *cars-list*)))
-      (block main-loop
-        (loop
+      (setq *cars-list* (load-list-from-file "cars.txt"))
+      (setq *occupied-slots*  (length *cars-list*)))
+    (block main-loop
+      (loop
         (format t "~%------------------ MENU ------------------~%")
         (format t "1. Dodaj auto~%")
         (format t "2. Usuń auto~%")
@@ -28,7 +28,6 @@
         (format t "4. Wyświetl listę aut~%")
         (format t "5. Wyjście~%")
         (format t "------------------------------------------~%")
-          (force-output *query-io*)
           (let ((choice (int-validation 1 5 "Wybierz opcję: ")))
             (cond
               ((= choice 1) (add-car))
@@ -36,15 +35,7 @@
               ((= choice 3) (extend-subscription))
               ((= choice 4) (show))
               ((= choice 5) (exit-program) (return-from main-loop)))))))
-
-(defun exit-program ()
-  (let ((choice (string-validation 1 "Czy chcesz zapisać zmiany? (T/N): ")))
-    (if (equal choice "T")
-        (progn
-          (save-autos-to-file "cars.txt" *cars-list*)
-          (format t "Zmiany zostały zapisane~%"))
-        (format t "Zmiany nie zostały zapisane~%"))))
-        
+      
 (defun add-car ()
   (format t "~A[H~@*~A[J" #\escape)
   (if (< *occupied-slots* *max-slots*)
@@ -78,9 +69,15 @@
   (format t "~A[H~@*~A[J" #\escape)
   (display-list-compact)
   (let ((index 0))
-    (force-output *query-io*)
     (setf index (int-validation 1 (length *cars-list*) "Podaj indeks auta, którego abonament chcesz przedłużyć: "))
-    (setf (VEHICLE-subscription-time (nth (1- index) *cars-list*)) (+ (VEHICLE-subscription-time (nth (1- index) *cars-list*)) (int-validation 0 100 "Podaj o ile godzin chcesz przedłużyć abonament: ")))))
+    (setf (VEHICLE-subscription-time (nth (1- index) *cars-list*))
+      (+ (VEHICLE-subscription-time (nth (1- index) *cars-list*)) 
+      (int-validation 0 100 "Podaj o ile godzin chcesz przedłużyć abonament: ")))))
+
+(defun convert-hours-to-days-and-hours (total-hours)
+  (let* ((days (floor total-hours 24))
+         (hours (mod total-hours 24)))
+    (list days hours)))
 
 (defun display-car (auto)
   (format t "Marka: ~a~%" (VEHICLE-brand auto))
@@ -89,34 +86,40 @@
   (format t "Imię właściciela: ~a~%" (VEHICLE-owner-name auto))
   (format t "Nazwisko właściciela: ~a~%" (VEHICLE-owner-surname auto))
   (format t "Abonament: ~a~%" (if (VEHICLE-subscription auto) "Tak" "Nie"))
-  (format t "Długość abonamentu: ~a godzin~%" (VEHICLE-subscription-time auto)))
+  (let* ((total-hours (VEHICLE-subscription-time auto))
+         (days-and-hours (convert-hours-to-days-and-hours total-hours)))
+  (format t "Długość abonamentu: ~a ~a ~a godzin~%" 
+          (first days-and-hours) 
+          (if (= (first days-and-hours) 1) "dzień" "dni")
+            (second days-and-hours))))
 
 (defun display-cars-list ()
   (format t "~A[H~@*~A[J" #\escape)
   (format t "Liczba dostępnych miejsc na parkingu: ~a~%" (- *max-slots* *occupied-slots*))
   (format t "Zawartość listy aut:~%")
-
   (dolist (auto *cars-list*)
     (format t "----------------------------~%")
     (display-car auto))
-
   (format t "----------------------------~%"))
 
 (defun display-list-compact ()
   (format t "~A[H~@*~A[J" #\escape)
   (format t "Liczba dostępnych miejsc na parkingu: ~a~%" (- *max-slots* *occupied-slots*))
   (format t "Zawartość listy aut:~%")
-
   (loop for (auto index) in (loop for auto in *cars-list* for i from 1 collect (list auto i))
-    do (format t "~d. Marka: ~a, Rejestracja: ~a, Kolor: ~a, Właściciel: ~a ~a, Abonament: ~a, Długość abonamentu (w godzinach): ~a~%"
-                index
-                (VEHICLE-brand auto)
-                (VEHICLE-registration auto)
-                (VEHICLE-colour auto)
-                (VEHICLE-owner-name auto)
-                (VEHICLE-owner-surname auto)
-                (if (VEHICLE-subscription auto) "Tak" "Nie")
-                (VEHICLE-subscription-time auto)))
+    do (let* ((total-hours (VEHICLE-subscription-time auto))
+              (days-and-hours (convert-hours-to-days-and-hours total-hours)))
+         (format t "~d. Marka: ~a, Rejestracja: ~a, Kolor: ~a, Właściciel: ~a ~a, Abonament: ~a, Długość abonamentu: ~a ~a ~a godzin~%"
+                 index
+                 (VEHICLE-brand auto)
+                 (VEHICLE-registration auto)
+                 (VEHICLE-colour auto)
+                 (VEHICLE-owner-name auto)
+                 (VEHICLE-owner-surname auto)
+                 (if (VEHICLE-subscription auto) "Tak" "Nie")
+                 (first days-and-hours)
+                 (if (= (first days-and-hours) 1) "dzień" "dni")
+                 (second days-and-hours))))
   (format t "----------------------------~%"))
 
 (defun display-sorted-list ()
@@ -139,5 +142,12 @@
       ((= choice 1) (display-cars-list))
       ((= choice 2) (display-sorted-list)))))
 
+(defun exit-program ()
+  (let ((choice (string-validation 1 "Czy chcesz zapisać zmiany? (T/N): ")))
+    (if (equal choice "T")
+        (progn
+          (save-autos-to-file "cars.txt" *cars-list*)
+          (format t "Zmiany zostały zapisane~%"))
+        (format t "Zmiany nie zostały zapisane~%"))))
 
 (main)
