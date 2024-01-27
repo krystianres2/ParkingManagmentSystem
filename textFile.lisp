@@ -13,7 +13,7 @@
       (loop for line = (read-line file nil)
             while line
             do (let ((auto (make-instance 'VEHICLE)))
-                 (destructuring-bind (brand registration colour name surname subscription ile-subscription)
+                 (destructuring-bind (brand registration colour name surname subscription subscription-time)
                      (split-sequence #\Space line)
                    (setf (VEHICLE-brand auto) brand)
                    (setf (VEHICLE-registration auto) registration)
@@ -21,7 +21,7 @@
                    (setf (VEHICLE-owner-name auto) name)
                    (setf (VEHICLE-owner-surname auto) surname)
                    (setf (VEHICLE-subscription auto) subscription)
-                   (setf (VEHICLE-subscription-time auto) (parse-integer ile-subscription))
+                   (setf (VEHICLE-subscription-time auto) (parse-integer subscription-time))
                    (setq list (append list (list auto))))))
       list)))  
 
