@@ -1,1 +1,1 @@
-Projekt realizowany na przedmiot Języki i Paradygmaty programowania. Plik cars.txt zawiera przykładowe dane dla programu, które są przez niego wczytywane po uruchomieniu.
+Console app for parking management. Uses a text file as a database.
